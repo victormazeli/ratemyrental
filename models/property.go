@@ -33,8 +33,10 @@ type Property struct {
 	DssAllowed           null.String      `json:"dss_allowed" gorm:"type:varchar(255)"`
 	SharersAllowed       null.String      `json:"sharers_allowed" gorm:"type:varchar(255)"`
 	AverageRating        null.Float       `json:"average_rating" gorm:"type:float"`
-	Location             null.String      `json:"location" gorm:"type:text"`
-	State                string           `json:"state" gorm:"type:varchar(255)"`
+	Address              null.String      `json:"address" gorm:"type:text"`
+	Latitude             float64          `json:"latitude"`
+	Longitude            float64          `json:"longitude"`
+	City                 string           `json:"city" gorm:"type:varchar(255)"`
 	Country              string           `json:"country" gorm:"type:varchar(255)"`
 	PostalCode           string           `json:"postal_code" gorm:"type:varchar(255)"`
 	PropertyImages       []*PropertyImage `json:"property_images"`

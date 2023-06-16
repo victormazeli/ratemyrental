@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"math"
-	"rateMyRentalBackend/dtos"
+	"rateMyRentalBackend/http/response"
 	"strconv"
 )
 
@@ -17,7 +17,7 @@ func Paginate(page int64, limit int64, query map[string]interface{}, sort string
 	}
 }
 
-func Pagination(table string, page string, limit string, sort string, query map[string]interface{}, db *gorm.DB) (*dtos.PaginationDTO, error) {
+func Pagination(table string, page string, limit string, sort string, query map[string]interface{}, preloadQuery *string, db *gorm.DB) (*response.PaginationDTO, error) {
 	parsePage, er := strconv.ParseInt(page, 0, 8)
 	if er != nil {
 		log.Fatal(er)
@@ -35,11 +35,17 @@ func Pagination(table string, page string, limit string, sort string, query map[
 
 	var data []map[string]interface{}
 
-	if result := db.Table(table).Scopes(Paginate(parsePage, parseLimit, query, sort)).Find(&data).Error; result != nil {
-		return nil, result
+	if preloadQuery != nil {
+		if result := db.Table(table).Preload(*preloadQuery).Scopes(Paginate(parsePage, parseLimit, query, sort)).Find(&data).Error; result != nil {
+			return nil, result
+		}
+	} else {
+		if result := db.Table(table).Scopes(Paginate(parsePage, parseLimit, query, sort)).Find(&data).Error; result != nil {
+			return nil, result
+		}
 	}
 
-	paginatedResult := &dtos.PaginationDTO{
+	paginatedResult := &response.PaginationDTO{
 		TotalPages: int64(totalPages),
 		TotalDocs:  totalRows,
 		Page:       parsePage,

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+    <style>
+        #message-container {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        #message-container p {
+            margin: 0 0 10px 0;
+        }
+
+        input[type="text"] {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+<h1>Chat App</h1>
+
+<div>
+    <label for="sender">Sender:</label>
+    <input id="sender" type="text">
+
+    <label for="recipient">Recipient:</label>
+    <input id="recipient" type="text">
+
+    <button id="joinBtn">Join Channel</button>
+</div>
+
+<div>
+    <h2>Chat Messages</h2>
+    <div id="message-container"></div>
+</div>
+
+<div>
+    <label for="message">Message:</label>
+    <input id="message" type="text">
+    <button id="sendBtn">Send Message</button>
+</div>
+
+<script type="application/javascript">
+    let socket;
+    let channelID;
+
+    function initializeWebSocket(channelId) {
+        const url = "ws://localhost:5900/ws?channel_id=" + channelId;
+        socket = new WebSocket(url);
+
+        socket.onmessage = function (event) {
+            const message = JSON.parse(event.data);
+            displayMessage(message.sender, message.content);
+        }
+    }
+
+    function displayMessage(sender, content) {
+        const container = document.getElementById("message-container");
+        const p = document.createElement("p");
+        p.textContent = sender + ': ' + content;
+        container.appendChild(p);
+    }
+
+    function joinChannel() {
+        const sender = document.getElementById("sender").value;
+        const recipient = document.getElementById("recipient").value;
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/channel/join");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                console.log(response, response.data.channel_id)
+                channelID = response.data.channel_id;
+                initializeWebSocket(channelID);
+                fetchMessages(channelID); // Fetch messages after joining the channel
+                alert("Joined channel successfully");
+            } else {
+                alert("Failed to join channel");
+            }
+        };
+        xhr.send(JSON.stringify({ sender_id: parseInt(sender), recipient_id: parseInt(recipient )}));
+    }
+
+    function sendMessage() {
+        const sender = document.getElementById("sender").value;
+        const recipient = document.getElementById("recipient").value;
+        const message = document.getElementById("message").value;
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/chat/messages");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                document.getElementById("message").value = "";
+                alert("Message sent successfully");
+            } else {
+                alert("Failed to send message");
+            }
+        };
+        xhr.send(JSON.stringify({ sender: parseInt(sender), recipient: parseInt(recipient), content: message, channel_id: channelID }));
+    }
+
+    function fetchMessages(channelID) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "/chat/messages?channelID=" + channelID);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const messages = JSON.parse(xhr.responseText);
+                for (let i = 0; i < messages.data.length; i++) {
+                    const message = messages.data[i];
+                    displayMessage(message.sender, message.content);
+                }
+            } else {
+                alert("Failed to fetch messages");
+            }
+        };
+        xhr.send();
+    }
+
+    // Attach event listeners to buttons
+    document.getElementById("joinBtn").addEventListener("click", joinChannel);
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
+</script>
+
+</body>
+</html>
+

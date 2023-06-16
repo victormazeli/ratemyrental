@@ -1,0 +1,239 @@
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Chat App</title>-->
+<!--    <style>-->
+<!--        body {-->
+<!--            font-family: Arial, sans-serif;-->
+<!--            margin: 0;-->
+<!--            padding: 20px;-->
+<!--        }-->
+
+<!--        .user-list {-->
+<!--            list-style: none;-->
+<!--            padding: 0;-->
+<!--            width: 200px;-->
+<!--            float: left;-->
+<!--        }-->
+
+<!--        .user-list-item {-->
+<!--            margin-bottom: 10px;-->
+<!--        }-->
+
+<!--        .user-list-item a {-->
+<!--            text-decoration: none;-->
+<!--            font-weight: bold;-->
+<!--        }-->
+
+<!--        .conversation-list {-->
+<!--            list-style: none;-->
+<!--            padding: 0;-->
+<!--            width: calc(100% - 220px);-->
+<!--            float: right;-->
+<!--        }-->
+
+<!--        .conversation-list-item {-->
+<!--            margin-bottom: 10px;-->
+<!--        }-->
+
+<!--        .conversation-list-item a {-->
+<!--            text-decoration: none;-->
+<!--            font-weight: bold;-->
+<!--        }-->
+
+<!--        .message-container {-->
+<!--            border: 1px solid #ccc;-->
+<!--            margin-bottom: 10px;-->
+<!--            padding: 10px;-->
+<!--        }-->
+
+<!--        .message-container .sender {-->
+<!--            font-weight: bold;-->
+<!--            margin-bottom: 5px;-->
+<!--        }-->
+
+<!--        #messages {-->
+<!--            height: 300px;-->
+<!--            overflow-y: scroll;-->
+<!--            border: 1px solid #ccc;-->
+<!--            padding: 10px;-->
+<!--        }-->
+
+<!--        #message-input {-->
+<!--            width: 100%;-->
+<!--            padding: 10px;-->
+<!--            border: 1px solid #ccc;-->
+<!--            margin-top: 10px;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h1>Chat App</h1>-->
+
+<!--<h2>Users</h2>-->
+<!--<ul class="user-list" id="user-list"></ul>-->
+
+<!--<h2>Conversations</h2>-->
+<!--<ul class="conversation-list" id="conversation-list"></ul>-->
+
+<!--<h2>Messages</h2>-->
+<!--<div id="messages"></div>-->
+
+<!--<h2>Chat Input</h2>-->
+<!--<input id="message-input" placeholder="Type a message..." type="text">-->
+
+<!--<script>-->
+<!--    const userList = document.getElementById("user-list");-->
+<!--    const conversationList = document.getElementById("conversation-list");-->
+<!--    const messagesDiv = document.getElementById("messages");-->
+<!--    const messageInput = document.getElementById("message-input");-->
+<!--    const urlParams = new URLSearchParams(window.location.search);-->
+<!--    const userID = urlParams.get('userID');-->
+<!--    const socket = new WebSocket("ws://localhost:5900/v1/chat?userID=" + userID);-->
+
+<!--    let activeUserID = null;-->
+<!--    let activeRoomID = null;-->
+
+<!--    function fetchUsers() {-->
+<!--        fetch("/v1/user/all")-->
+<!--            .then(response => response.json())-->
+<!--            .then(data => {-->
+<!--                // Clear user list-->
+<!--                userList.innerHTML = "";-->
+
+<!--                // Populate user list-->
+<!--                data.data.forEach(user => {-->
+<!--                    const listItem = document.createElement("li");-->
+<!--                    listItem.classList.add("user-list-item");-->
+
+<!--                    const link = document.createElement("a");-->
+<!--                    link.href = "#";-->
+<!--                    link.textContent = user.full_name || user.id;-->
+<!--                    link.addEventListener("click", event => {-->
+<!--                        event.preventDefault();-->
+<!--                        setActiveUser(user.id);-->
+<!--                    });-->
+
+<!--                    listItem.appendChild(link);-->
+<!--                    userList.appendChild(listItem);-->
+<!--                });-->
+<!--            })-->
+<!--            .catch(error => {-->
+<!--                console.error("Error fetching users:", error);-->
+<!--            });-->
+<!--    }-->
+
+<!--    function fetchUserRooms(userID) {-->
+<!--        fetch(`/v1/rooms/user/${userID}`)-->
+<!--            .then(response => response.json())-->
+<!--            .then(data => {-->
+<!--                // Clear conversation list-->
+<!--                conversationList.innerHTML = "";-->
+
+<!--                // Populate conversation list-->
+<!--                data.data.forEach(room => {-->
+<!--                    const listItem = document.createElement("li");-->
+<!--                    listItem.classList.add("conversation-list-item");-->
+
+<!--                    const link = document.createElement("a");-->
+<!--                    link.href = "#";-->
+<!--                    link.textContent = room.id;-->
+<!--                    link.addEventListener("click", event => {-->
+<!--                        event.preventDefault();-->
+<!--                        setActiveRoom(room.id);-->
+<!--                    });-->
+
+<!--                    listItem.appendChild(link);-->
+<!--                    conversationList.appendChild(listItem);-->
+<!--                });-->
+<!--            })-->
+<!--            .catch(error => {-->
+<!--                console.error("Error fetching rooms for the user:", error);-->
+<!--            });-->
+<!--    }-->
+
+<!--    function fetchUserMessages(roomID) {-->
+<!--        fetch(`/v1/room/messages/${roomID}`)-->
+<!--            .then(response => response.json())-->
+<!--            .then(data => {-->
+<!--                // Clear messages-->
+<!--                messagesDiv.innerHTML = "";-->
+
+<!--                // Display messages-->
+<!--                data.data.forEach(message => {-->
+<!--                    displayMessage(message);-->
+<!--                });-->
+<!--            })-->
+<!--            .catch(error => {-->
+<!--                console.error("Error fetching user messages:", error);-->
+<!--            });-->
+<!--    }-->
+
+<!--    function setActiveUser(userID) {-->
+<!--        activeUserID = userID;-->
+<!--        fetchUserRooms(userID);-->
+<!--    }-->
+
+<!--    function setActiveRoom(roomID) {-->
+<!--        activeRoomID = roomID;-->
+<!--        fetchUserMessages(roomID);-->
+<!--    }-->
+
+<!--    function displayMessage(message) {-->
+<!--        const messageContainer = document.createElement("div");-->
+<!--        messageContainer.classList.add("message-container");-->
+
+<!--        const senderElement = document.createElement("p");-->
+<!--        senderElement.classList.add("sender");-->
+<!--        senderElement.textContent = `Sender: ${message.sender_id}`;-->
+
+<!--        const contentElement = document.createElement("p");-->
+<!--        contentElement.textContent = message.content;-->
+
+<!--        messageContainer.appendChild(senderElement);-->
+<!--        messageContainer.appendChild(contentElement);-->
+
+<!--        messagesDiv.appendChild(messageContainer);-->
+<!--    }-->
+
+<!--    messageInput.addEventListener("keydown", function(event) {-->
+<!--        if (event.key === "Enter") {-->
+<!--            const content = messageInput.value;-->
+
+<!--            if (activeRoomID) {-->
+<!--                const message = {-->
+<!--                    room_id: activeRoomID,-->
+<!--                    content: content-->
+<!--                };-->
+
+<!--                socket.send(JSON.stringify(message));-->
+
+<!--                messageInput.value = "";-->
+<!--            } else {-->
+<!--                console.log("No active room selected.");-->
+<!--            }-->
+<!--        }-->
+<!--    });-->
+
+<!--    // WebSocket implementation-->
+<!--    socket.onmessage = function(event) {-->
+<!--        const data = JSON.parse(event.data);-->
+
+<!--        if (data.event === "message") {-->
+<!--            displayMessage(data.message);-->
+<!--        }-->
+<!--    };-->
+
+<!--    socket.onopen = function() {-->
+<!--        console.log("WebSocket connection established.");-->
+<!--        fetchUsers();-->
+<!--    };-->
+
+<!--    socket.onclose = function() {-->
+<!--        console.log("WebSocket connection closed.");-->
+<!--    };-->
+<!--</script>-->
+
+<!--</body>-->
+<!--</html>-->

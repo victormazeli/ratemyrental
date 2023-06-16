@@ -1,12 +1,16 @@
 package utils
 
 import (
+	"context"
 	"crypto/tls"
+	"github.com/mailgun/mailgun-go/v3"
 	"gopkg.in/gomail.v2"
 	"log"
+	"rateMyRentalBackend/config"
+	"time"
 )
 
-func SendEmail(receiver, body, subject string) error {
+func SendTestEmail(receiver, body, subject string) error {
 	var e error
 	m := gomail.NewMessage()
 
@@ -31,4 +35,22 @@ func SendEmail(receiver, body, subject string) error {
 		e = err
 	}
 	return e
+}
+
+func SendEmail(env *config.Env, receiver, body, subject string) (string, error) {
+	mg := mailgun.NewMailgun(env.MailGunDomain, env.MailGunApiKey)
+	mg.SetAPIBase(mailgun.APIBaseEU)
+	m := mg.NewMessage(
+		"no-reply"+"@"+env.MailGunDomain,
+		subject,
+		body,
+		receiver,
+	)
+	m.SetHtml(body)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+
+	_, id, err := mg.Send(ctx, m)
+	return id, err
 }
