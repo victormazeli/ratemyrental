@@ -48,7 +48,7 @@
     let channelID;
 
     function initializeWebSocket(channelId) {
-        const url = "ws://localhost:5900/ws?channel_id=" + channelId;
+        const url = "ws://raterentalapi.frontendlabs.co.uk/ws?channel_id=" + channelId;
         socket = new WebSocket(url);
 
         socket.onmessage = function (event) {
