@@ -77,21 +77,21 @@ func (u UserController) UpdateUserInfo(c *gin.Context) {
 	var userInfoInput request.UserInput
 
 	if err := c.ShouldBindJSON(&userInfoInput); err == nil {
-		result := u.Db.Model(&models.User{}).Where("id = ?", userId).Updates(map[string]interface{}{
-			"full_name": userInfoInput.FullName,
-			"avatar":    userInfoInput.Avatar,
-			//"address":     userInfoInput.Address,
-			"postal_code": userInfoInput.PostalCode,
-			"latitude":    userInfoInput.Latitude,
-			"longitude":   userInfoInput.Longitude,
-			"city":        userInfoInput.City,
-			"country":     userInfoInput.Country,
+		result := u.Db.Model(&models.User{}).Omit("password").Where("id = ?", userId).Updates(map[string]interface{}{
+			"full_name":    userInfoInput.FullName,
+			"avatar":       userInfoInput.Avatar,
+			"phone_number": userInfoInput.PhoneNumber,
+			"postal_code":  userInfoInput.PostalCode,
+			"latitude":     userInfoInput.Latitude,
+			"longitude":    userInfoInput.Longitude,
+			"city":         userInfoInput.City,
+			"country":      userInfoInput.Country,
 		})
 
 		if result.Error == nil {
 			userResult := u.Db.Model(&models.User{}).Where("id = ?", userId).First(&user)
 			if userResult.Error == nil {
-				user.Password = ""
+				//user.Password = ""
 				response.SuccessResponse(http.StatusOK, "user info updated successfully", user, c)
 				return
 
