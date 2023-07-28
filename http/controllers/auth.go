@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"rateMyRentalBackend/common/utils"
 	"rateMyRentalBackend/config"
+	models2 "rateMyRentalBackend/database/models"
 	"rateMyRentalBackend/http/request"
 	response2 "rateMyRentalBackend/http/response"
-	"rateMyRentalBackend/models"
 	"time"
 )
 
@@ -35,9 +35,9 @@ func (a AuthController) Login(c *gin.Context) {
 	var loginInput request.LoginInput
 	// deserialize JSON to struct
 	if err := c.ShouldBindJSON(&loginInput); err == nil {
-		var user models.User
+		var user models2.User
 
-		query := &models.User{
+		query := &models2.User{
 			Email: loginInput.Email,
 		}
 		// check user
@@ -87,9 +87,9 @@ func (a AuthController) Login(c *gin.Context) {
 func (a AuthController) Register(c *gin.Context) {
 	var registerInput request.RegisterInput
 	if err := c.ShouldBind(&registerInput); err == nil {
-		var user models.User
+		var user models2.User
 
-		query := &models.User{
+		query := &models2.User{
 			Email: registerInput.Email,
 		}
 		findUser := a.Db.Where(query).First(&user)
@@ -107,11 +107,11 @@ func (a AuthController) Register(c *gin.Context) {
 						"password":  registerInput.Password,
 						"full_name": registerInput.FullName,
 					}
-					newUser := a.Db.Model(&models.User{}).Create(newUserPayload)
+					newUser := a.Db.Model(&models2.User{}).Create(newUserPayload)
 					if newUser.Error == nil {
 						otp := utils.GenerateOTP()
 
-						otpPayload := &models.Otp{
+						otpPayload := &models2.Otp{
 							Email:      registerInput.Email,
 							Purpose:    registration,
 							Otp:        otp,
@@ -160,9 +160,9 @@ func (a AuthController) Register(c *gin.Context) {
 func (a AuthController) ForgetPassword(c *gin.Context) {
 	var forgotPasswordInput request.ForgotPasswordInput
 	if err := c.ShouldBind(&forgotPasswordInput); err == nil {
-		var user models.User
+		var user models2.User
 
-		query := &models.User{
+		query := &models2.User{
 			Email: forgotPasswordInput.Email,
 		}
 		findUser := a.Db.Where(query).First(&user)
@@ -171,7 +171,7 @@ func (a AuthController) ForgetPassword(c *gin.Context) {
 		if findUser.Error == nil {
 			otp := utils.GenerateOTP()
 
-			otpPayload := &models.Otp{
+			otpPayload := &models2.Otp{
 				Email:      user.Email,
 				Purpose:    forgetPassword,
 				Otp:        otp,
@@ -219,9 +219,9 @@ func (a AuthController) ResetPassword(c *gin.Context) {
 	var resetPasswordInput request.ResetPassword
 
 	if err := c.ShouldBind(&resetPasswordInput); err == nil {
-		var otpData models.Otp
+		var otpData models2.Otp
 
-		query := &models.Otp{
+		query := &models2.Otp{
 			Otp:     resetPasswordInput.Otp,
 			Purpose: forgetPassword,
 			Status:  0,
@@ -236,7 +236,7 @@ func (a AuthController) ResetPassword(c *gin.Context) {
 				if err == nil {
 					newPassword := encodedHash
 
-					updateUser := a.Db.Model(&models.User{}).Where("email = ?", otpData.Email).Update("password", newPassword)
+					updateUser := a.Db.Model(&models2.User{}).Where("email = ?", otpData.Email).Update("password", newPassword)
 					if updateUser.Error == nil {
 						updateOtpTable := a.Db.Model(&otpData).Update("status", usedOtp)
 
@@ -285,7 +285,7 @@ func (a AuthController) ValidateOtp(c *gin.Context) {
 	var validateOtpInput request.ValidateOtp
 
 	if err := c.ShouldBind(&validateOtpInput); err == nil {
-		var otpData models.Otp
+		var otpData models2.Otp
 
 		findUserOtp := a.Db.Where(map[string]interface{}{"otp": validateOtpInput.Otp, "status": 0}).First(&otpData)
 
@@ -296,7 +296,7 @@ func (a AuthController) ValidateOtp(c *gin.Context) {
 					updateOtpTable := a.Db.Model(&otpData).Update("status", usedOtp)
 
 					if updateOtpTable.Error == nil {
-						updateUser := a.Db.Model(&models.User{}).Where("email = ?", otpData.Email).Update("status", 1)
+						updateUser := a.Db.Model(&models2.User{}).Where("email = ?", otpData.Email).Update("status", 1)
 						if updateUser.Error == nil {
 							response2.SuccessResponse(http.StatusOK, "Otp validation successful", nil, c)
 							return
@@ -360,9 +360,9 @@ func (a AuthController) ResendOtp(c *gin.Context) {
 			purpose = registration
 		}
 
-		var user models.User
+		var user models2.User
 
-		query := &models.User{
+		query := &models2.User{
 			Email: resendOtpInput.Email,
 		}
 		findUser := a.Db.Where(query).First(&user)
@@ -370,7 +370,7 @@ func (a AuthController) ResendOtp(c *gin.Context) {
 		if findUser.Error == nil {
 			otp := utils.GenerateOTP()
 
-			otpPayload := &models.Otp{
+			otpPayload := &models2.Otp{
 				Email:      user.Email,
 				Purpose:    purpose,
 				Otp:        otp,
@@ -440,9 +440,9 @@ func (a AuthController) GoogleLogin(c *gin.Context) {
 			return
 		}
 
-		user := &models.User{}
+		user := &models2.User{}
 
-		query := &models.User{
+		query := &models2.User{
 			Email: *payload.Email,
 		}
 		findUser := a.Db.Where(query).First(&user)
@@ -454,7 +454,7 @@ func (a AuthController) GoogleLogin(c *gin.Context) {
 				"password":  "",
 				"full_name": *payload.Name,
 			}
-			if insertError := a.Db.Model(&models.User{}).Create(newUserPayload).Error; insertError != nil {
+			if insertError := a.Db.Model(&models2.User{}).Create(newUserPayload).Error; insertError != nil {
 				response2.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
 				return
 			}

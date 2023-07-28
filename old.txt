@@ -1,0 +1,151 @@
+//
+//	func (p PropertyController) AddNewProperty(c *gin.Context) {
+//		userId, _ := c.Get("user")
+//		var propertyInput request2.PropertyInput
+//		var property models.Property
+//		var propertyImages []models.PropertyImage
+//
+//		if err := c.ShouldBind(&propertyInput); err == nil {
+//			// check if property already exist
+//			findProperty := p.Db.Model(&models.Property{}).Where("property_title = ?", propertyInput.PropertyTitle).First(&property)
+//			// check db errors
+//			if findProperty.Error == nil {
+//				response.ErrorResponse(http.StatusBadRequest, "property already exist", c)
+//				return
+//			} else {
+//				if errors.Is(findProperty.Error, gorm.ErrRecordNotFound) == true {
+//					propertyPayload := map[string]interface{}{
+//						"postal_code":    propertyInput.PostalCode,
+//						"country":        propertyInput.Country,
+//						"state":          propertyInput.State,
+//						"latitude":       propertyInput.Latitude,
+//						"longitude":      propertyInput.Longitude,
+//						"property_title": propertyInput.PropertyTitle,
+//						"description":    propertyInput.Description,
+//						"is_visible":     1,
+//						"user_id":        userId,
+//					}
+//
+//					addProperty := p.Db.Model(&models.Property{}).Create(&propertyPayload).Last(&property)
+//
+//					if addProperty.Error == nil {
+//
+//						for _, image := range propertyInput.Images {
+//							propertyImages = append(propertyImages, models.PropertyImage{ImageUrl: image, PropertyID: property.ID})
+//
+//						}
+//
+//						result := p.Db.Create(&propertyImages)
+//
+//						if result.Error == nil {
+//							response.SuccessResponse(http.StatusOK, "property added successful", property, c)
+//
+//						} else {
+//							response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
+//						}
+//
+//					} else {
+//						response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
+//					}
+//
+//				} else {
+//					response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
+//				}
+//			}
+//
+//		} else {
+//			response.ErrorResponse(http.StatusBadRequest, err.Error(), c)
+//		}
+//
+// }
+
+
+//func (p PropertyController) GetProperty(c *gin.Context) {
+//	var property models.Property
+//	propertyId := c.Param("id")
+//	id, err := strconv.ParseInt(propertyId, 0, 8)
+//
+//	if err == nil {
+//		findProperty := p.Db.Preload("PropertyImages").Find(&property, id)
+//
+//		if findProperty.Error == nil {
+//			response.SuccessResponse(http.StatusOK, "property fetched successfully", property, c)
+//			return
+//
+//		} else {
+//			if errors.Is(findProperty.Error, gorm.ErrRecordNotFound) == true {
+//				response.ErrorResponse(http.StatusNotFound, "property not found", c)
+//				return
+//			} else {
+//				response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
+//				return
+//			}
+//		}
+//
+//	} else {
+//		response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
+//		return
+//	}
+//
+//}
+
+func (p PropertyController) UploadImageProperty(c *gin.Context) {
+//	propertyId := c.PostForm("property_id")
+//
+//	parsedPropertyId, err := strconv.ParseInt(propertyId, 0, 8)
+//
+//	if err == nil {
+//		formData, er := c.MultipartForm()
+//		var filePaths []string
+//		var propertyImages []models.PropertyImage
+//
+//		if er == nil {
+//			files := formData.File["files"]
+//
+//			if files == nil {
+//				response.ErrorResponse(http.StatusBadRequest, "Please select the input file", c)
+//				return
+//			}
+//
+//			if propertyId == "" {
+//				response.ErrorResponse(http.StatusBadRequest, "property_id is missing in request", c)
+//				return
+//			}
+//
+//			for _, file := range files {
+//				fileExt := filepath.Ext(file.Filename)
+//				originalFileName := strings.TrimSuffix(filepath.Base(file.Filename), filepath.Ext(file.Filename))
+//				filename := strings.ReplaceAll(strings.ToLower(originalFileName), " ", "-") + "-" + fmt.Sprintf("%v", time.Now().Unix()) + fileExt
+//				if e := c.SaveUploadedFile(file, "./public/image/"+filename); e != nil {
+//					response.ErrorResponse(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", e.Error()), c)
+//					return
+//				}
+//				filePath := p.Env.BaseUrl + "/static/image/" + filename
+//
+//				filePaths = append(filePaths, filePath)
+//				// attach to property with property id,
+//				propertyImages = append(propertyImages, models.PropertyImage{ImageUrl: filePath, PropertyID: uint(parsedPropertyId)})
+//			}
+//			// store image url  in database
+//			result := p.Db.Create(&propertyImages)
+//
+//			if result.Error == nil {
+//				response.SuccessResponse(http.StatusOK, "upload successful", filePaths, c)
+//				return
+//			} else {
+//				response.ErrorResponse(http.StatusInternalServerError, "property_id is missing in request", c)
+//				return
+//			}
+//		} else {
+//			response.ErrorResponse(http.StatusBadRequest, er.Error(), c)
+//			return
+//		}
+//
+//	} else {
+//		response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
+//		return
+//	}
+//}
+
+
+

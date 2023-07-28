@@ -7,9 +7,9 @@ import (
 	"log"
 	"net/http"
 	"rateMyRentalBackend/config"
+	"rateMyRentalBackend/database/models"
 	"rateMyRentalBackend/http/request"
 	"rateMyRentalBackend/http/response"
-	"rateMyRentalBackend/models"
 	"strconv"
 )
 

@@ -34,8 +34,8 @@ type PropertyUpdateInput struct {
 type PropertyInput struct {
 	PropertyTitle string   `json:"property_title" binding:"required"`
 	Description   string   `json:"description"`
-	Latitude      string   `json:"latitude" binding:"required"`
-	Longitude     string   `json:"longitude" binding:"required"`
+	Latitude      float64  `json:"latitude" binding:"required"`
+	Longitude     float64  `json:"longitude" binding:"required"`
 	State         string   `json:"state" binding:"required"`
 	Country       string   `json:"country" binding:"required"`
 	PostalCode    string   `json:"postal_code" binding:"required"`
@@ -44,4 +44,8 @@ type PropertyInput struct {
 
 type FavoritePropertyInput struct {
 	PropertyID uint `json:"property_id" binding:"required"`
+}
+
+type PropertyImagesUpload struct {
+	ImageUrl string `json:"image_url" binding:"required"`
 }

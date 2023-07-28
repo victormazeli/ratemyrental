@@ -8,8 +8,8 @@ import (
 	"log"
 	"net/http"
 	"rateMyRentalBackend/config"
+	models2 "rateMyRentalBackend/database/models"
 	"rateMyRentalBackend/http/response"
-	"rateMyRentalBackend/models"
 	"strconv"
 )
 
@@ -28,7 +28,7 @@ type ChatController struct {
 }
 
 func (ch ChatController) JoinChannel(c *gin.Context) {
-	var channel models.Channel
+	var channel models2.Channel
 
 	if err := c.ShouldBindJSON(&channel); err != nil {
 		response.ErrorResponse(http.StatusBadRequest, err.Error(), c)
@@ -60,7 +60,7 @@ func (ch ChatController) JoinChannel(c *gin.Context) {
 }
 
 func (ch ChatController) SendMessage(c *gin.Context) {
-	var message models.ChatMessage
+	var message models2.ChatMessage
 	if err := c.ShouldBindJSON(&message); err != nil {
 		response.ErrorResponse(http.StatusBadRequest, err.Error(), c)
 		return
@@ -92,7 +92,7 @@ func (ch ChatController) GetMessages(c *gin.Context) {
 		return
 	}
 
-	var messages []models.ChatMessage
+	var messages []models2.ChatMessage
 	if err := ch.DB.Where("channel_id = ?", channelID).Find(&messages).Error; err != nil {
 		response.ErrorResponse(http.StatusInternalServerError, err.Error(), c)
 		return

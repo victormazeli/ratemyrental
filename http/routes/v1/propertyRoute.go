@@ -6,17 +6,23 @@ import (
 	"rateMyRentalBackend/config"
 	"rateMyRentalBackend/http/controllers"
 	middlewares2 "rateMyRentalBackend/http/middlewares"
+	"rateMyRentalBackend/http/services"
 )
 
 func PropertyRouter(env *config.Env, db *gorm.DB, group *gin.RouterGroup) {
-	p := controllers.PropertyController{
+	ps := services.PropertyService{
 		Db:  db,
 		Env: env,
+	}
+	p := controllers.PropertyController{
+		Db:              db,
+		Env:             env,
+		PropertyService: ps,
 	}
 	group.GET("/property/get/:id", middlewares2.Auth(env.JwtKey), p.GetProperty)
 	group.GET("/property/all", middlewares2.Auth(env.JwtKey), p.GetAllProperties)
 	group.POST("/property/add", middlewares2.Auth(env.JwtKey), middlewares2.RateLimiter("/property/add", 5, 60, env), p.AddNewProperty)
-	group.POST("/property/upload/image", middlewares2.Auth(env.JwtKey), p.UploadImageProperty)
+	//group.POST("/property/upload/image", middlewares2.Auth(env.JwtKey), p.UploadImageProperty)
 	group.POST("/property/add_favorite", middlewares2.Auth(env.JwtKey), p.AddOrRemoveFavoriteProperty)
 	group.POST("/property/toggle_publish", middlewares2.Auth(env.JwtKey), p.TogglePropertyVisibility)
 	group.GET("/property/get_favorite", middlewares2.Auth(env.JwtKey), p.GetUserFavoriteProperties)

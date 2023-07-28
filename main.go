@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"rateMyRentalBackend/config"
 	"rateMyRentalBackend/database"
+	models2 "rateMyRentalBackend/database/models"
 	"rateMyRentalBackend/http/controllers"
 	"rateMyRentalBackend/http/middlewares"
 	"rateMyRentalBackend/http/response"
 	"rateMyRentalBackend/http/routes/misc"
 	routesV1 "rateMyRentalBackend/http/routes/v1"
 	"rateMyRentalBackend/http/ws"
-	"rateMyRentalBackend/models"
 )
 
 func main() {
@@ -24,17 +24,17 @@ func main() {
 	env := app.Env
 	db := database.ConnectDB(env.DBUser, env.DBPass, env.DBHost, env.DBPort, env.DBName)
 	err := db.AutoMigrate(
-		&models.User{},
-		&models.Property{},
-		&models.PropertyImage{},
-		&models.PropertyType{},
-		&models.PropertyDetachedType{},
-		&models.Otp{},
-		&models.Rating{},
-		&models.App{},
-		&models.FavoriteProperty{},
-		&models.ChatMessage{},
-		&models.Channel{},
+		&models2.User{},
+		&models2.Property{},
+		&models2.PropertyImage{},
+		&models2.PropertyType{},
+		&models2.PropertyDetachedType{},
+		&models2.Otp{},
+		&models2.Rating{},
+		&models2.App{},
+		&models2.FavoriteProperty{},
+		&models2.ChatMessage{},
+		&models2.Channel{},
 	)
 	if err != nil {
 		log.Fatalf(err.Error())
