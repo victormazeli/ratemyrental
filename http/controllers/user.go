@@ -91,6 +91,7 @@ func (u UserController) UpdateUserInfo(c *gin.Context) {
 		if result.Error == nil {
 			userResult := u.Db.Model(&models.User{}).Where("id = ?", userId).First(&user)
 			if userResult.Error == nil {
+				user.Password = ""
 				response.SuccessResponse(http.StatusOK, "user info updated successfully", user, c)
 				return
 
