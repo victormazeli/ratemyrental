@@ -78,9 +78,9 @@ func (u UserController) UpdateUserInfo(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&userInfoInput); err == nil {
 		result := u.Db.Model(&models.User{}).Where("id = ?", userId).Updates(map[string]interface{}{
-			"full_name":   userInfoInput.FullName,
-			"avatar":      userInfoInput.Avatar,
-			"address":     userInfoInput.Address,
+			"full_name": userInfoInput.FullName,
+			"avatar":    userInfoInput.Avatar,
+			//"address":     userInfoInput.Address,
 			"postal_code": userInfoInput.PostalCode,
 			"latitude":    userInfoInput.Latitude,
 			"longitude":   userInfoInput.Longitude,
