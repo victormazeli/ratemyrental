@@ -35,8 +35,8 @@ type Property struct {
 	AverageRating        null.Float      `json:"average_rating" gorm:"type:float"`
 	Address              null.String     `json:"address" gorm:"type:text"`
 	State                NullString      `json:"state" gorm:"type:text"`
-	Latitude             float64         `json:"latitude"`
-	Longitude            float64         `json:"longitude"`
+	Latitude             string          `json:"latitude"`
+	Longitude            string          `json:"longitude"`
 	City                 string          `json:"city" gorm:"type:varchar(255)"`
 	Country              string          `json:"country" gorm:"type:varchar(255)"`
 	PostalCode           string          `json:"postal_code" gorm:"type:varchar(255)"`

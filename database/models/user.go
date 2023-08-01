@@ -11,8 +11,8 @@ type User struct {
 	Email         string      `json:"email" gorm:"type:varchar(255);unique;not null""`
 	Password      string      `json:"password" gorm:"type:varchar(255);not null""`
 	Avatar        null.String `json:"avatar" gorm:"type:varchar(255)"`
-	Latitude      float64     `json:"latitude"`
-	Longitude     float64     `json:"longitude"`
+	Latitude      string      `json:"latitude"`
+	Longitude     string      `json:"longitude"`
 	City          string      `json:"city" gorm:"type:varchar(255)"`
 	Country       string      `json:"country" gorm:"type:varchar(255)"`
 	PostalCode    null.String `json:"postal_code" gorm:"type:varchar(255)"`

@@ -816,10 +816,10 @@ func Recommend(destinations []models2.Property, currDest models2.User) []models2
 
 func ComputeSimilarity(item1 models2.Property, item2 models2.User) float64 {
 	// Compute the distance between the two items using their geoPoints
-	lat1 := item1.Latitude
-	lon1 := item1.Longitude
-	lat2 := item2.Latitude
-	lon2 := item2.Longitude
+	lat1, _ := strconv.ParseFloat(item1.Latitude, 64)
+	lon1, _ := strconv.ParseFloat(item1.Longitude, 64)
+	lat2, _ := strconv.ParseFloat(item2.Latitude, 64)
+	lon2, _ := strconv.ParseFloat(item2.Longitude, 64)
 	dist := haversine(lat1, lon1, lat2, lon2)
 
 	// Compute the similarity score as the inverse of the distance

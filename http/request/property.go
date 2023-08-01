@@ -34,8 +34,8 @@ type PropertyUpdateInput struct {
 type PropertyInput struct {
 	PropertyTitle string   `json:"property_title" binding:"required"`
 	Description   string   `json:"description"`
-	Latitude      float64  `json:"latitude" binding:"required"`
-	Longitude     float64  `json:"longitude" binding:"required"`
+	Latitude      string   `json:"latitude" binding:"required"`
+	Longitude     string   `json:"longitude" binding:"required"`
 	State         string   `json:"state" binding:"required"`
 	Country       string   `json:"country" binding:"required"`
 	PostalCode    string   `json:"postal_code" binding:"required"`
