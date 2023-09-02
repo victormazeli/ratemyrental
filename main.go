@@ -61,7 +61,7 @@ func main() {
 	})
 
 	router.NoRoute(func(c *gin.Context) {
-		response.ErrorResponse(http.StatusNotFound, "404 page not found", c)
+		response.ErrorResponse(http.StatusNotFound, "404 resource not found", c)
 		return
 	})
 

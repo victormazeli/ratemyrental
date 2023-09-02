@@ -19,6 +19,7 @@ type PropertyUpdateInput struct {
 	Ensuite              string `json:"ensuite"`
 	CharacterFeature     string `json:"character_feature"`
 	EpcRatings           string `json:"epc_ratings"`
+	City                 string `json:"city"`
 	PetsAllowed          string `json:"pets_allowed"`
 	SmokingAllowed       string `json:"smoking_allowed"`
 	DssAllowed           string `json:"dss_allowed"`

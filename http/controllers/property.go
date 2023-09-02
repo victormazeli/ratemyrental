@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
 	"math"
 	"net/http"
 	"rateMyRentalBackend/config"
@@ -13,6 +12,7 @@ import (
 	request2 "rateMyRentalBackend/http/request"
 	"rateMyRentalBackend/http/response"
 	"rateMyRentalBackend/http/services"
+	"reflect"
 	"strconv"
 )
 
@@ -89,7 +89,7 @@ func (p PropertyController) GetProperty(c *gin.Context) {
 	}
 
 	var property models2.Property
-	findProperty := p.Db.Preload("PropertyImages").First(&property, id)
+	findProperty := p.Db.Preload("PropertyImages").Preload("Ratings").First(&property, id)
 
 	if findProperty.Error != nil {
 		if errors.Is(findProperty.Error, gorm.ErrRecordNotFound) {
@@ -164,11 +164,12 @@ func (p PropertyController) GetProperty(c *gin.Context) {
 func (p PropertyController) GetAllProperties(c *gin.Context) {
 	page := c.DefaultQuery("page", "1")
 	limit := c.DefaultQuery("limit", "20")
+	searchTerm := c.DefaultQuery("searchTerm", "")
 
-	visibleProperties := map[string]interface{}{"properties.is_visible": 1}
+	visibleProperties := map[string]interface{}{"is_visible": 1}
 
-	fetchProperties, err := p.PropertyService.Pagination(page, limit, visibleProperties)
-	log.Print(err)
+	fetchProperties, err := p.PropertyService.Pagination(page, limit, visibleProperties, searchTerm)
+
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			response.ErrorResponse(http.StatusNotFound, "no properties found", c)
@@ -268,7 +269,8 @@ func (p PropertyController) RateProperty(c *gin.Context) {
 	ratePayload := &models2.Rating{
 		PropertyID: rateInput.PropertyID,
 		Score:      rateInput.Score,
-		Feature:    rateInput.Feature,
+		Comment:    rateInput.Comment,
+		UserID:     rateInput.UserID,
 	}
 
 	if err := p.Db.Create(ratePayload).Error; err != nil {
@@ -524,7 +526,9 @@ func (p PropertyController) UpdatePropertyDetail(c *gin.Context) {
 		return
 	}
 
-	if err := p.Db.Model(&property).Updates(updateInput).Error; err != nil {
+	updateData := structToMap(updateInput)
+
+	if err := p.Db.Model(&property).Updates(updateData).Error; err != nil {
 		response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
 		return
 	}
@@ -754,8 +758,9 @@ func (p PropertyController) GetUserUploadedProperties(c *gin.Context) {
 	userId, _ := c.Get("user")
 	page := c.DefaultQuery("page", "1")
 	limit := c.DefaultQuery("limit", "10")
+	searchTerm := c.DefaultQuery("searchTerm", "")
 
-	fetchProperties, err := p.PropertyService.Pagination(page, limit, map[string]interface{}{"user_id": userId})
+	fetchProperties, err := p.PropertyService.Pagination(page, limit, map[string]interface{}{"user_id": userId}, searchTerm)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -844,4 +849,22 @@ func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 
 func toRadians(deg float64) float64 {
 	return deg * math.Pi / 180
+}
+
+func structToMap(data interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	value := reflect.ValueOf(data)
+
+	if value.Kind() != reflect.Struct {
+		return result
+	}
+
+	typ := value.Type()
+	for i := 0; i < value.NumField(); i++ {
+		field := value.Field(i)
+		fieldName := typ.Field(i).Name
+		result[fieldName] = field.Interface()
+	}
+
+	return result
 }

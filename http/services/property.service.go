@@ -14,30 +14,37 @@ type PropertyService struct {
 	Env *config.Env
 }
 
-func (ps PropertyService) Pagination(page string, limit string, query map[string]interface{}) (*response.PaginationDTO, error) {
+func (ps PropertyService) Pagination(page string, limit string, query map[string]interface{}, searchTerm string) (*response.PaginationDTO, error) {
 	parsePage, er := strconv.ParseInt(page, 0, 64)
 	if er != nil {
 		return nil, er
 	}
 
-	// parse query "limit" to int
 	parseLimit, e := strconv.ParseInt(limit, 0, 64)
 	if e != nil {
 		return nil, e
 	}
 
 	var totalRows int64
+	var data []models.Property
 
-	// Explicitly set the table name for the model before using it in the query
-	ps.Db.Model(&models.Property{}).Where(query).Count(&totalRows)
+	queryDB := ps.Db.Preload("PropertyImages").Where(query)
+
+	// Apply search term to multiple columns
+	if searchTerm != "" {
+		searchTerm = "%" + searchTerm + "%"
+		queryDB = queryDB.Where("property_title LIKE ? OR longitude LIKE ? OR latitude LIKE ? OR state LIKE ? OR city LIKE ? OR postal_code LIKE ? OR country LIKE ?",
+			searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm)
+	}
+
+	// Count the total rows after applying the search term
+	queryDB.Model(&models.Property{}).Count(&totalRows)
 
 	totalPages := int(math.Ceil(float64(totalRows)) / float64(parseLimit))
 
-	var data []models.Property
 	offset := (parsePage - 1) * parseLimit
-	preloadAssociation := "PropertyImages"
 	sort := "created_at desc"
-	queryDB := ps.Db.Preload(preloadAssociation).Offset(int(offset)).Limit(int(parseLimit)).Order(sort)
+	queryDB = queryDB.Offset(int(offset)).Limit(int(parseLimit)).Order(sort)
 
 	if result := queryDB.Find(&data).Error; result != nil {
 		return nil, result
@@ -52,5 +59,4 @@ func (ps PropertyService) Pagination(page string, limit string, query map[string
 	}
 
 	return paginatedResult, nil
-
 }

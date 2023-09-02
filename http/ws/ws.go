@@ -11,6 +11,7 @@ import (
 	models2 "rateMyRentalBackend/database/models"
 	"rateMyRentalBackend/http/response"
 	"strconv"
+	"time"
 )
 
 var (
@@ -21,6 +22,13 @@ var (
 
 	hub = HubInstance
 )
+
+var chatMessages []struct {
+	RecipientName string
+	Content       string
+	CreatedAt     time.Time
+	ChannelID     uint
+}
 
 type ChatController struct {
 	Env *config.Env
@@ -43,7 +51,7 @@ func (ch ChatController) JoinChannel(c *gin.Context) {
 		err := ch.DB.Where("(sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?)", channel.SenderID, channel.RecipientID, channel.RecipientID, channel.SenderID).First(&channel).Error
 		if err != nil {
 			if err := ch.DB.Create(&channel).Error; err != nil {
-				response.ErrorResponse(http.StatusInternalServerError, err.Error(), c)
+				response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
 				return
 			}
 		}
@@ -75,7 +83,7 @@ func (ch ChatController) SendMessage(c *gin.Context) {
 	}
 
 	if err := ch.DB.Create(&message).Error; err != nil {
-		response.ErrorResponse(http.StatusInternalServerError, err.Error(), c)
+		response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
 		return
 	}
 
@@ -94,10 +102,26 @@ func (ch ChatController) GetMessages(c *gin.Context) {
 
 	var messages []models2.ChatMessage
 	if err := ch.DB.Where("channel_id = ?", channelID).Find(&messages).Error; err != nil {
-		response.ErrorResponse(http.StatusInternalServerError, err.Error(), c)
+		response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
 		return
 	}
 	response.SuccessResponse(http.StatusOK, "Messages retrieved successfully", messages, c)
+}
+
+func (ch ChatController) GetUsersChat(c *gin.Context) {
+	userId, _ := c.Get("user")
+	log.Print(userId)
+	if err := ch.DB.Table("chat_messages").
+		Select("users.full_name AS recipient_name, chat_messages.content, chat_messages.created_at, chat_messages.channel_id").
+		Joins("LEFT JOIN users ON chat_messages.recipient = users.id").
+		Where("(chat_messages.sender = ? OR chat_messages.recipient = ?)", userId, userId).
+		Where("chat_messages.created_at = (SELECT MAX(created_at) FROM chat_messages WHERE chat_messages.channel_id = chat_messages.channel_id)").
+		Find(&chatMessages).Error; err != nil {
+		response.ErrorResponse(http.StatusInternalServerError, "An error occurred", c)
+		return
+	}
+
+	response.SuccessResponse(http.StatusOK, "Messages retrieved successfully", chatMessages, c)
 }
 
 //func (ch ChatController) GetMessages(c *gin.Context) {
